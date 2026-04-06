@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IoT Smart Door Lock — Project Report</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:      #f7f5f0;
+    --paper:   #fdfcf8;
+    --ink:     #111108;
+    --mid:     #3a3a30;
+    --dim:     #7a7a68;
+    --rule:    #e0dbd0;
+    --accent:  #1a4a7a;
+    --green:   #1a5a30;
+    --red:     #8b1a1a;
+    --teal:    #005f6b;
+    --code-bg: #f0ede4;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Lora', Georgia, serif;
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.8;
+    padding: 0;
+  }
+
+  /* Cover */
+  .cover {
+    background: var(--ink);
+    color: #f7f5f0;
+    padding: 5rem 4rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent, transparent 30px,
+      rgba(255,255,255,0.02) 30px, rgba(255,255,255,0.02) 31px
+    );
+  }
+  .cover-inner { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+  .cover-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4); margin-bottom: 2.5rem;
+  }
+  .cover h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800; line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+  .cover h1 span { color: #60a8c8; }
+  .cover .subtitle {
+    font-family: 'Lora', serif; font-style: italic;
+    font-size: 1.05rem; color: rgba(255,255,255,0.55);
+    margin-bottom: 3rem; max-width: 560px;
+  }
+  .cover-meta {
+    display: flex; gap: 3rem; flex-wrap: wrap;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: rgba(255,255,255,0.4); line-height: 2;
+  }
+  .cover-meta strong { color: rgba(255,255,255,0.7); display: block; }
+
+  /* Body */
+  .body { max-width: 800px; margin: 0 auto; padding: 4rem 2rem; }
+
+  /* Section headings */
+  h2 {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 1.5rem; color: var(--ink);
+    letter-spacing: -0.01em;
+    margin: 3.5rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  h2 .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; color: var(--dim);
+    margin-right: 0.6rem; font-weight: 400;
+    vertical-align: middle;
+  }
+  h3 {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 1.05rem; color: var(--accent);
+    margin: 1.8rem 0 0.6rem;
+  }
+
+  p { margin-bottom: 1rem; }
+
+  /* Tables */
+  .tbl-wrap { overflow-x: auto; margin: 1.5rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th {
+    background: var(--ink); color: #f7f5f0;
+    padding: 0.55rem 0.9rem; text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  td {
+    padding: 0.52rem 0.9rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+  tr:last-child td { border-bottom: none; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--accent); }
+
+  /* Code blocks */
+  pre {
+    background: var(--code-bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 1.2rem 1.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; line-height: 1.65;
+    overflow-x: auto; margin: 1.2rem 0;
+    color: var(--mid);
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg); font-size: 0.83em;
+    padding: 0.1em 0.35em; border-radius: 3px;
+    color: var(--accent);
+  }
+
+  /* Bug cards */
+  .bug-card {
+    border: 1px solid var(--rule);
+    border-radius: 6px; overflow: hidden;
+    margin: 1.2rem 0;
+  }
+  .bug-header {
+    display: flex; align-items: center; gap: 0.8rem;
+    background: #fff8f5; padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .bug-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.15rem 0.5rem; border-radius: 3px;
+    background: #fde8e8; color: var(--red);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .bug-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem; }
+  .bug-body { padding: 0.9rem 1rem; font-size: 0.88rem; }
+  .bug-body p { margin-bottom: 0.5rem; }
+  .fix-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+    font-weight: 700; color: var(--green); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 0.3rem; display: block;
+  }
+  .fix-text { color: var(--green); }
+
+  /* Result chips */
+  .result-list { list-style: none; margin: 1rem 0; }
+  .result-list li {
+    display: flex; align-items: baseline; gap: 0.7rem;
+    padding: 0.5rem 0; border-bottom: 1px solid var(--rule);
+    font-size: 0.9rem;
+  }
+  .result-list li:last-child { border-bottom: none; }
+  .tick { color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  /* Function table */
+  .fn-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; color: var(--teal); font-weight: 700;
+  }
+
+  /* Abstract box */
+  .abstract {
+    background: var(--code-bg);
+    border-radius: 6px; padding: 1.5rem 1.8rem;
+    font-style: italic; color: var(--mid);
+    margin: 1rem 0 2rem;
+    border-left: 4px solid var(--accent);
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--rule);
+    margin-top: 4rem; padding-top: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: var(--dim);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── COVER ── -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-tag">Technical Project Report · ECE Internship</div>
+    <h1>IoT Smart<br><span>Door Lock</span><br>System</h1>
+    <p class="subtitle">A keypad-driven embedded security system with persistent EEPROM storage, servo-motor actuation, and brute-force protection — built on Arduino Uno.</p>
+    <div class="cover-meta">
+      <div><strong>Platform</strong>Arduino Uno (ATmega328P)</div>
+      <div><strong>Language</strong>C++ / Arduino Framework</div>
+      <div><strong>Tools</strong>Arduino IDE · Tinkercad</div>
+      <div><strong>Domain</strong>Embedded Systems · IoT</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BODY ── -->
+<div class="body">
+
+  <!-- ABSTRACT -->
+  <h2><span class="num">—</span>Abstract</h2>
+  <div class="abstract">
+    This project presents a fully functional keypad-based smart door lock built on the Arduino Uno microcontroller. A 4×4 matrix keypad serves as the PIN entry interface; a servo motor acts as the physical locking mechanism; and an LED provides real-time status feedback. Passwords are stored in the microcontroller's non-volatile EEPROM, persisting across power cycles. The system includes a 3-attempt lockout mechanism and a secure password-change workflow. Three firmware bugs identified during development were resolved — covering EEPROM validation, special-key filtering, and input buffer overflow. The project demonstrates practical competency in embedded C++ programming, digital I/O, PWM control, and hardware debugging.
+  </div>
+
+  <!-- 1. INTRODUCTION -->
+  <h2><span class="num">01</span>Introduction</h2>
+  <p>Traditional mechanical door locks depend entirely on physical keys, which are susceptible to being lost, copied, or forgotten. Electronic lock systems offer a more adaptable and auditable alternative — enabling PIN-based access, remote control capabilities, and event logging that physical keys cannot provide.</p>
+  <p>This project implements a complete electronic door lock using low-cost, widely available components, targeting the Arduino Uno as the control unit. It was developed as part of an internship training programme in Electronics and Communication Engineering, with the objective of demonstrating applied understanding of microcontroller interfacing, non-volatile memory management, and event-driven firmware architecture.</p>
+
+  <h3>Objectives</h3>
+  <p>The system was designed to meet the following goals:</p>
+  <ul style="margin:0.5rem 0 1rem 1.5rem;line-height:2">
+    <li>Accept a 4-digit PIN via physical keypad</li>
+    <li>Control a servo motor as the door lock actuator</li>
+    <li>Persist the password across power cycles using EEPROM</li>
+    <li>Provide a secure password-change workflow</li>
+    <li>Implement a brute-force lockout mechanism</li>
+  </ul>
+
+  <!-- 2. COMPONENTS -->
+  <h2><span class="num">02</span>Components &amp; Materials</h2>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Component</th><th>Model / Type</th><th>Quantity</th><th>Role</th></tr>
+      <tr><td>Microcontroller</td><td class="mono">Arduino Uno (ATmega328P)</td><td>1</td><td>Main controller — runs all firmware logic</td></tr>
+      <tr><td>Keypad</td><td class="mono">4×4 Matrix Keypad</td><td>1</td><td>16-key input for PIN entry and commands</td></tr>
+      <tr><td>Servo Motor</td><td class="mono">SG90 / Standard Servo</td><td>1</td><td>Physical lock mechanism (0° = locked, 90° = open)</td></tr>
+      <tr><td>LED</td><td class="mono">5mm Standard LED</td><td>1</td><td>Visual indicator — ON when unlocked</td></tr>
+      <tr><td>Resistor</td><td class="mono">220Ω</td><td>1</td><td>Current limiting for LED</td></tr>
+      <tr><td>EEPROM</td><td class="mono">Built-in (ATmega328P, 1KB)</td><td>—</td><td>Non-volatile storage for 4-char password</td></tr>
+    </table>
+  </div>
+
+  <!-- 3. SYSTEM DESIGN -->
+  <h2><span class="num">03</span>System Design</h2>
+
+  <h3>Architecture Overview</h3>
+  <p>The firmware follows an event-driven polling architecture. The main <code>loop()</code> function continuously polls the keypad for input. When a key is detected, it is routed to one of three handlers based on the key value — clear (<code>*</code>), submit (<code>#</code>), or change-password (<code>A</code>). Digit keys are appended to an input buffer. Output — servo position and LED state — is triggered by the result of the password comparison.</p>
+
+  <h3>Pin Configuration</h3>
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Arduino Pin</th><th>Connected To</th><th>Purpose</th></tr>
+      <tr><td class="mono">D2 – D5</td><td>Keypad Columns 1–4</td><td>Column scanning</td></tr>
+      <tr><td class="mono">D6 – D9</td><td>Keypad Rows 1–4</td><td>Row scanning</td></tr>
+      <tr><td class="mono">D10</td><td>Servo Signal (orange wire)</td><td>PWM angle control</td></tr>
+      <tr><td class="mono">D11</td><td>LED Anode (via 220Ω)</td><td>Status indicator output</td></tr>
+      <tr><td class="mono">D12</td><td>ESP8266 D8 (optional)</td><td>SoftwareSerial TX to WiFi bridge</td></tr>
+      <tr><td class="mono">D13</td><td>ESP8266 D7 via divider (optional)</td><td>SoftwareSerial RX from WiFi bridge</td></tr>
+      <tr><td class="mono">5V</td><td>Servo VCC, ESP VIN</td><td>Power supply rail</td></tr>
+      <tr><td class="mono">GND</td><td>All grounds</td><td>Common return path</td></tr>
+    </table>
+  </div>
+
+  <h3>EEPROM Password Storage</h3>
+  <p>The 4-digit password is stored as four ASCII character bytes at EEPROM addresses 0–3. On every startup, <code>loadPassword()</code> reads these four bytes and validates that each falls within the ASCII digit range (decimal 48–57, i.e., '0'–'9'). If any byte fails validation — as would occur on a factory-fresh board where EEPROM initialises to <code>0xFF</code> — the system sets the default password to <code>1234</code> and writes it to EEPROM before proceeding.</p>
+
+  <!-- 4. WORKING -->
+  <h2><span class="num">04</span>System Operation</h2>
+
+  <h3>Normal Unlock Flow</h3>
+  <p>On power-up, the system loads the stored PIN and initialises the servo to 0° (locked). The user enters up to four digits using the keypad, then presses <code>#</code> to submit. If the input matches the stored password, the servo rotates to 90° and the LED activates. After a fixed 5-second window, the servo automatically returns to 0° and the LED turns off — relocking the door without any further user input.</p>
+
+  <h3>Wrong Attempt &amp; Lockout</h3>
+  <p>Each incorrect PIN increments a <code>wrongAttempts</code> counter. Upon reaching three consecutive failures, the system enters a 30-second lockout state during which all keypad input is silently ignored. Once the lockout expires, the counter resets to zero and normal operation resumes. This mechanism prevents automated brute-force PIN guessing.</p>
+
+  <h3>Password Change</h3>
+  <p>Pressing <code>A</code> initiates the password-change workflow. The system first requires the current PIN to be entered correctly — providing authentication before any change is permitted. Only after successful verification does the system prompt for and accept a new 4-digit PIN. The new password is immediately written to EEPROM and becomes active for all subsequent unlock attempts. Crucially, only digit keys (0–9) are accepted during this flow; special keys are filtered out to prevent an unenterable password from being set.</p>
+
+  <!-- 5. CODE -->
+  <h2><span class="num">05</span>Code Structure</h2>
+
+  <div class="tbl-wrap">
+    <table>
+      <tr><th>Function</th><th>Description</th></tr>
+      <tr><td class="fn-tag">setup()</td><td>Initialises Serial, attaches servo, configures LED pin, loads password from EEPROM</td></tr>
+      <tr><td class="fn-tag">loop()</td><td>Polls keypad; routes keys to checkPassword(), changePassword(), or appends digit to input buffer (capped at 4 chars)</td></tr>
+      <tr><td class="fn-tag">checkPassword()</td><td>Compares input with stored password; triggers servo/LED on match; increments wrongAttempts and triggers lockout on failure</td></tr>
+      <tr><td class="fn-tag">changePassword()</td><td>Calls collectCode() to authenticate with old PIN, then collects new PIN and saves to EEPROM</td></tr>
+      <tr><td class="fn-tag">collectCode()</td><td>Helper — reads exactly 4 digit keypresses, printing '*' to Serial to mask input</td></tr>
+      <tr><td class="fn-tag">savePassword()</td><td>Writes 4 ASCII characters to EEPROM addresses 0–3</td></tr>
+      <tr><td class="fn-tag">loadPassword()</td><td>Reads EEPROM bytes 0–3; validates each as ASCII digit; falls back to '1234' if invalid</td></tr>
+    </table>
+  </div>
+
+  <h3>Key Code Excerpt — Password Check</h3>
+<pre>void checkPassword() {
+  if (input == password) {
+    Serial.println(" ACCESS GRANTED");
+    digitalWrite(LED_PIN, HIGH);
+    lockServo.write(90);    // unlock
+    delay(5000);
+    lockServo.write(0);     // auto-relock
+    digitalWrite(LED_PIN, LOW);
+    wrongAttempts = 0;
+  } else {
+    wrongAttempts++;
+    Serial.println(" WRONG PASSWORD");
+    if (wrongAttempts >= MAX_ATTEMPTS) {
+      delay(30000);         // 30s lockout
+      wrongAttempts = 0;
+    }
+  }
+  input = "";
+}</pre>
+
+  <!-- 6. BUGS -->
+  <h2><span class="num">06</span>Bugs Identified &amp; Resolved</h2>
+  <p>During development and code review, three functional bugs were identified and fixed before final submission.</p>
+
+  <div class="bug-card">
+    <div class="bug-header">
+      <span class="bug-tag">Bug 01</span>
+      <span class="bug-title">EEPROM Blank Board — Incorrect Password Loaded</span>
+    </div>
+    <div class="bug-body">
+      <p><strong>Root Cause:</strong> On a factory-fresh or erased Arduino, all EEPROM bytes default to <code>0xFF</code> (decimal 255). The original validation checked <code>password.length() != 4</code>, which always returned <code>false</code> because four <code>0xFF</code> bytes do form a 4-character string — just an unprintable, unenterable one. The system would then operate with a garbage password that no user input could ever match.</p>
+      <span class="fix-label">Resolution</span>
+      <p class="fix-text">Each EEPROM byte is now explicitly validated to be within the ASCII digit range (48–57). Any byte outside this range causes the system to discard the stored value and set the default password to <code>1234</code>.</p>
+    </div>
+  </div>
+
+  <div class="bug-card">
+    <div class="bug-header">
+      <span class="bug-tag">Bug 02</span>
+      <span class="bug-title">Special Keys Accepted During Password Change</span>
+    </div>
+    <div class="bug-body">
+      <p><strong>Root Cause:</strong> The password-change routine accepted all keypad input indiscriminately, including <code>*</code>, <code>#</code>, and letter keys (A–D). This allowed a user to set a password containing non-digit characters — a password that could never be re-entered through the normal unlock flow, permanently locking out the system.</p>
+      <span class="fix-label">Resolution</span>
+      <p class="fix-text">A dedicated <code>collectCode()</code> helper was introduced. It only appends a key to the buffer if the key falls in the range <code>'0'</code>–<code>'9'</code>, silently ignoring all other keys during both old-password verification and new-password entry.</p>
+    </div>
+  </div>
+
+  <div class="bug-card">
+    <div class="bug-header">
+      <span class="bug-tag">Bug 03</span>
+      <span class="bug-title">Input Buffer Overflow — Comparison Always Fails</span>
+    </div>
+    <div class="bug-body">
+      <p><strong>Root Cause:</strong> The main <code>loop()</code> had no upper bound on the input string length. A user who typed more than four digits before pressing <code>#</code> would generate a string longer than the stored 4-character password. Since Arduino's <code>String</code> comparison is exact, a 5+ character input could never equal a 4-character password, causing the unlock to fail silently regardless of the digits entered.</p>
+      <span class="fix-label">Resolution</span>
+      <p class="fix-text">A guard condition <code>input.length() &lt; PASS_LEN</code> was added before any digit is appended to the input buffer, capping it at exactly 4 characters.</p>
+    </div>
+  </div>
+
+  <!-- 7. RESULTS -->
+  <h2><span class="num">07</span>Results &amp; Verification</h2>
+  <ul class="result-list">
+    <li><span class="tick">✓</span>Correct PIN grants access — servo rotates to 90°, LED activates immediately</li>
+    <li><span class="tick">✓</span>Door auto-relocks after exactly 5 seconds with no further user input required</li>
+    <li><span class="tick">✓</span>Password persists correctly across power cycles via EEPROM</li>
+    <li><span class="tick">✓</span>Factory-fresh board initialises with default PIN 1234 — no garbage password loaded</li>
+    <li><span class="tick">✓</span>Three consecutive wrong PINs trigger 30-second lockout; counter resets on expiry</li>
+    <li><span class="tick">✓</span>Password change requires correct current PIN before accepting new value</li>
+    <li><span class="tick">✓</span>New passwords accept only digit characters; special keys are silently ignored</li>
+    <li><span class="tick">✓</span>Input buffer correctly capped at 4 characters under all input sequences</li>
+  </ul>
+
+  <!-- 8. CONCLUSION -->
+  <h2><span class="num">08</span>Conclusion</h2>
+  <p>This project successfully delivers a working embedded door lock system that integrates keypad input, servo actuation, LED feedback, and persistent EEPROM storage into a cohesive security application. The firmware was iteratively developed and debugged — with three real bugs identified, root-caused, and resolved — demonstrating a methodical approach to embedded software quality.</p>
+  <p>The system is intentionally scoped for clarity and executability within a standard lab setup, while remaining architecturally extensible. The SoftwareSerial bridge to an optional ESP8266 module would allow future enhancement with WiFi-based remote unlock and cloud access logging via a service such as Adafruit IO, without requiring changes to the core Uno firmware.</p>
+
+  <h3>Skills Demonstrated</h3>
+  <ul style="margin:0.5rem 0 1rem 1.5rem;line-height:2">
+    <li>Embedded C++ programming on Arduino Uno (ATmega328P)</li>
+    <li>Hardware interfacing — servo motors, matrix keypads, LEDs</li>
+    <li>Non-volatile memory management (EEPROM read/write/validate)</li>
+    <li>Systematic firmware debugging and root-cause analysis</li>
+    <li>Event-driven architecture in resource-constrained environments</li>
+  </ul>
+
+  <!-- 9. REFERENCES -->
+  <h2><span class="num">09</span>References</h2>
+  <ul style="margin:0.5rem 0 1rem 1.5rem;line-height:2.2;font-size:0.9rem">
+    <li>Arduino Documentation — <em>docs.arduino.cc</em></li>
+    <li>Mark Stanley, Alexander Brevig — <em>Keypad Library for Arduino</em></li>
+    <li>Atmel — <em>ATmega328P Datasheet</em>, Section 7 (EEPROM Memory)</li>
+    <li>Michael Margolis — <em>Arduino Cookbook</em>, O'Reilly Media</li>
+    <li>Tinkercad Circuits — <em>tinkercad.com/circuits</em></li>
+  </ul>
+
+  <footer>
+    <span>IoT Smart Door Lock System · ECE Internship Project Report</span>
+    <span>Arduino Uno · C++ · Tinkercad</span>
+  </footer>
+</div>
+
+</body>
+</html>

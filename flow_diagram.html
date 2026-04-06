@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Smart Door Lock — System Flow Diagram</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0f1923;
+    --panel: #141f2e;
+    --border: #1e3a52;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --red: #f87171;
+    --orange: #fb923c;
+    --yellow: #fbbf24;
+    --text: #e2eaf2;
+    --dim: #4a7090;
+    --dim2: #2a4a64;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 3rem 2rem;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+    background-size: 44px 44px;
+    pointer-events: none;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+
+  .header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h1 { font-size: 1.9rem; font-weight: 800; color: var(--accent); letter-spacing: -0.01em; }
+  .header p { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--dim); letter-spacing: 0.18em; margin-top: 0.3rem; }
+  .header-right { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--dim); text-align: right; line-height: 1.9; }
+
+  .diagram {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2.5rem 2rem;
+    margin-bottom: 2rem;
+  }
+
+  /* ── Node Styles ── */
+  .node {
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    position: relative;
+  }
+  .node-start {
+    background: linear-gradient(135deg, #0e4a6e, #0c3a56);
+    border: 2px solid var(--accent);
+    border-radius: 28px;
+    padding: 0.6rem 2rem;
+    color: var(--accent);
+    font-weight: 700; font-size: 0.88rem; letter-spacing: 0.12em;
+    width: fit-content; margin: 0 auto;
+    box-shadow: 0 0 20px rgba(56,189,248,0.2);
+  }
+  .node-process {
+    background: var(--panel);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem 1.5rem;
+    color: var(--text);
+    font-size: 0.82rem;
+    width: fit-content; margin: 0 auto;
+  }
+  .node-decision {
+    background: #1a2a10;
+    border: 2px solid var(--yellow);
+    border-radius: 6px;
+    padding: 0.55rem 1.4rem;
+    color: var(--yellow);
+    font-weight: 700; font-size: 0.82rem;
+    width: fit-content; margin: 0 auto;
+    transform: perspective(400px) rotateX(4deg);
+  }
+  .node-success {
+    background: #062515;
+    border: 2px solid var(--green);
+    border-radius: 6px;
+    padding: 0.6rem 1.5rem;
+    color: var(--green);
+    font-weight: 700; font-size: 0.82rem;
+    width: fit-content; margin: 0 auto;
+  }
+  .node-fail {
+    background: #200a0a;
+    border: 2px solid var(--red);
+    border-radius: 6px;
+    padding: 0.6rem 1.5rem;
+    color: var(--red);
+    font-weight: 700; font-size: 0.82rem;
+    width: fit-content; margin: 0 auto;
+  }
+  .node-warn {
+    background: #1e1000;
+    border: 2px solid var(--orange);
+    border-radius: 6px;
+    padding: 0.6rem 1.5rem;
+    color: var(--orange);
+    font-weight: 700; font-size: 0.82rem;
+    width: fit-content; margin: 0 auto;
+  }
+  .sub { font-size: 0.68rem; color: var(--dim); font-weight: 400; display: block; margin-top: 0.2rem; }
+
+  /* ── Flow layout ── */
+  .flow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  .arrow-down {
+    width: 2px; height: 28px;
+    background: var(--dim);
+    margin: 0 auto;
+    position: relative;
+  }
+  .arrow-down::after {
+    content: '';
+    position: absolute; bottom: -5px; left: -4px;
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid var(--dim);
+  }
+  .arrow-down.green { background: var(--green); }
+  .arrow-down.green::after { border-top-color: var(--green); }
+  .arrow-down.red { background: var(--red); }
+  .arrow-down.red::after { border-top-color: var(--red); }
+  .arrow-down.orange { background: var(--orange); }
+  .arrow-down.orange::after { border-top-color: var(--orange); }
+  .arrow-down.yellow { background: var(--yellow); }
+  .arrow-down.yellow::after { border-top-color: var(--yellow); }
+
+  /* Branch split */
+  .branch {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+  }
+  .branch-left  { display: flex; flex-direction: column; align-items: center; }
+  .branch-right { display: flex; flex-direction: column; align-items: center; }
+  .branch-center { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+
+  .h-line {
+    height: 2px;
+    background: var(--dim);
+    width: 100%;
+    margin-top: 14px;
+  }
+  .h-line.green { background: var(--green); }
+  .h-line.red   { background: var(--red); }
+
+  .branch-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    margin-bottom: 4px;
+  }
+  .label-yes { background: rgba(52,211,153,0.15); color: var(--green); }
+  .label-no  { background: rgba(248,113,113,0.15); color: var(--red); }
+  .label-clr { background: rgba(251,191,36,0.12); color: var(--yellow); }
+  .label-chg { background: rgba(251,146,60,0.15); color: var(--orange); }
+
+  /* Key routing section */
+  .key-route {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.2rem;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .key-col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  /* Loop back indicator */
+  .loop-back {
+    display: flex; align-items: center; gap: 0.6rem;
+    border: 1px dashed var(--dim2);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: var(--dim);
+    margin: 0 auto;
+    width: fit-content;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 1.2rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 1.5rem;
+  }
+  .leg { display: flex; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; }
+  .leg-box { width: 14px; height: 14px; border-radius: 3px; }
+
+  .footer {
+    text-align: center; color: var(--dim);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+    letter-spacing: 0.12em; margin-top: 1.5rem;
+    border-top: 1px solid var(--border); padding-top: 1rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <h1>System Flow Diagram</h1>
+      <p>IoT Smart Door Lock · Arduino Uno · C++</p>
+    </div>
+    <div class="header-right">
+      Event-Driven Architecture<br>
+      EEPROM · Keypad · Servo · LED
+    </div>
+  </div>
+
+  <div class="diagram">
+    <div class="flow">
+
+      <!-- START -->
+      <div class="node-start">⚡ POWER ON</div>
+      <div class="arrow-down"></div>
+
+      <!-- LOAD PASSWORD -->
+      <div class="node-process">
+        Load password from EEPROM
+        <span class="sub">validate bytes → fallback to '1234' if blank</span>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- INIT -->
+      <div class="node-process">
+        Initialize hardware
+        <span class="sub">Servo → 0° (locked) · LED OFF · Serial ready</span>
+      </div>
+      <div class="arrow-down"></div>
+
+      <!-- WAIT FOR KEY -->
+      <div class="node-decision">⌨ Wait for keypad press</div>
+      <div class="arrow-down yellow"></div>
+
+      <!-- WHICH KEY ROUTING -->
+      <div style="width:100%;margin-bottom:0">
+        <div class="key-route">
+
+          <!-- * Clear -->
+          <div class="key-col">
+            <div class="branch-label label-clr">key = *</div>
+            <div class="arrow-down" style="background:var(--yellow)"></div>
+            <div class="node-warn" style="font-size:0.76rem;padding:0.5rem 1rem">
+              Clear Input
+              <span class="sub">input = ""</span>
+            </div>
+          </div>
+
+          <!-- 0-9 Digit -->
+          <div class="key-col">
+            <div class="branch-label" style="background:rgba(56,189,248,0.1);color:var(--accent)">key = 0–9</div>
+            <div class="arrow-down"></div>
+            <div class="node-process" style="font-size:0.76rem;padding:0.5rem 1rem">
+              Append to input
+              <span class="sub">max 4 digits</span>
+            </div>
+          </div>
+
+          <!-- A Change -->
+          <div class="key-col">
+            <div class="branch-label label-chg">key = A</div>
+            <div class="arrow-down" style="background:var(--orange)"></div>
+            <div class="node-warn" style="font-size:0.76rem;padding:0.5rem 1rem">
+              Change Password
+              <span class="sub">verify old → set new</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- # Submit branch inline -->
+      <div style="width:100%;display:flex;flex-direction:column;align-items:center;margin-top:1.5rem">
+        <div class="branch-label" style="background:rgba(52,211,153,0.1);color:var(--green);margin-bottom:4px">key = #  →  Submit</div>
+        <div class="arrow-down green"></div>
+      </div>
+
+      <!-- CHECK PASSWORD -->
+      <div class="node-decision">🔍 Check: input == password?</div>
+
+      <!-- Branch YES/NO -->
+      <div class="branch" style="max-width:620px;margin-top:0">
+        <!-- YES left -->
+        <div class="branch-left" style="padding-top:0">
+          <div class="h-line green"></div>
+          <div class="arrow-down green" style="height:16px"></div>
+          <div class="branch-label label-yes" style="margin-bottom:6px">YES ✓</div>
+          <div class="node-success">
+            ACCESS GRANTED
+            <span class="sub">Servo → 90° · LED ON</span>
+          </div>
+          <div class="arrow-down green"></div>
+          <div class="node-success" style="background:#041a0e;font-size:0.76rem;padding:0.5rem 1rem">
+            Wait 5 seconds
+          </div>
+          <div class="arrow-down green"></div>
+          <div class="node-success" style="background:#041a0e;font-size:0.76rem;padding:0.5rem 1rem">
+            Auto-lock
+            <span class="sub">Servo → 0° · LED OFF</span>
+          </div>
+          <div class="arrow-down green"></div>
+          <div class="node-process" style="font-size:0.72rem;padding:0.45rem 1rem">
+            Reset attempt counter
+          </div>
+        </div>
+
+        <!-- Center spacer -->
+        <div class="branch-center">
+          <div style="width:2px;height:100%;background:var(--dim2);margin:0 auto"></div>
+        </div>
+
+        <!-- NO right -->
+        <div class="branch-right" style="padding-top:0">
+          <div class="h-line red"></div>
+          <div class="arrow-down red" style="height:16px"></div>
+          <div class="branch-label label-no" style="margin-bottom:6px">NO ✗</div>
+          <div class="node-fail">
+            WRONG PASSWORD
+            <span class="sub">wrongAttempts++</span>
+          </div>
+          <div class="arrow-down red"></div>
+          <div class="node-decision" style="border-color:var(--red);color:var(--red);background:#1a0808;font-size:0.76rem">
+            attempts ≥ 3?
+          </div>
+          <div class="arrow-down red"></div>
+          <div class="node-fail" style="background:#1a0808;border-color:var(--orange);color:var(--orange);font-size:0.78rem">
+            🔒 LOCKOUT 30s
+            <span class="sub">all input blocked</span>
+          </div>
+          <div class="arrow-down orange"></div>
+          <div class="node-process" style="font-size:0.72rem;padding:0.45rem 1rem">
+            Reset wrongAttempts = 0
+          </div>
+        </div>
+      </div>
+
+      <!-- Loop back -->
+      <div class="arrow-down" style="height:20px;margin-top:1rem"></div>
+      <div class="loop-back">↩ &nbsp;Return to keypad wait loop</div>
+
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <div class="leg"><div class="leg-box" style="background:#062515;border:1.5px solid var(--green)"></div>Success path</div>
+      <div class="leg"><div class="leg-box" style="background:#200a0a;border:1.5px solid var(--red)"></div>Failure path</div>
+      <div class="leg"><div class="leg-box" style="background:#1e1000;border:1.5px solid var(--orange)"></div>Warning / Action</div>
+      <div class="leg"><div class="leg-box" style="background:#1a2a10;border:1.5px solid var(--yellow)"></div>Decision</div>
+      <div class="leg"><div class="leg-box" style="background:var(--panel);border:1.5px solid var(--border)"></div>Process</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Smart Door Lock System · System Flow Diagram · Arduino Uno
+  </div>
+
+</div>
+</body>
+</html>

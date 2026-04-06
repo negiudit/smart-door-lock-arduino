@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Smart Door Lock — Circuit Diagram</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f5f3ee;
+    --paper: #faf9f5;
+    --ink: #1a1a18;
+    --mid: #3a3a36;
+    --dim: #888880;
+    --rule: #ddd8cc;
+    --accent: #c0392b;
+    --blue: #2471a3;
+    --green: #1a7a4a;
+    --orange: #d35400;
+    --yellow: #f4a600;
+    --wire-pwr: #c0392b;
+    --wire-gnd: #222;
+    --wire-sig: #2471a3;
+    --wire-ser: #d35400;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Syne', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 3rem 2rem;
+  }
+
+  /* Ruled paper texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: repeating-linear-gradient(
+      transparent, transparent 27px,
+      rgba(180,170,140,0.18) 27px, rgba(180,170,140,0.18) 28px
+    );
+    pointer-events: none;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 2.5px solid var(--ink);
+    padding-bottom: 1rem; margin-bottom: 2.5rem;
+  }
+  .header-left h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+  .header-left p  { font-size: 0.78rem; color: var(--dim); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 0.3rem; }
+  .header-right   { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--dim); line-height: 1.8; }
+
+  /* Main diagram area */
+  .diagram-area {
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 4px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  svg text { font-family: 'JetBrains Mono', monospace; }
+
+  /* Pin reference tables */
+  .tables { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  @media(max-width:640px){ .tables { grid-template-columns: 1fr; } }
+
+  .tbl-card {
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  }
+  .tbl-head {
+    background: var(--ink); color: #fff;
+    padding: 0.55rem 1rem;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: rgba(0,0,0,0.04);
+    padding: 0.4rem 0.75rem; text-align: left;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--dim); border-bottom: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  td {
+    padding: 0.42rem 0.75rem;
+    font-size: 0.78rem;
+    border-bottom: 1px solid rgba(200,194,176,0.35);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pin   { color: var(--blue); font-weight: 700; }
+  .pwr   { color: var(--wire-pwr); font-weight: 700; }
+  .gnd   { color: #666; }
+  .ser   { color: var(--wire-ser); font-weight: 700; }
+  .sig   { color: var(--wire-sig); }
+
+  /* Voltage divider callout */
+  .callout {
+    background: #fff8f0;
+    border-left: 4px solid var(--orange);
+    border-radius: 0 4px 4px 0;
+    padding: 1rem 1.2rem;
+    margin-bottom: 2rem;
+    font-size: 0.82rem; line-height: 1.7;
+  }
+  .callout strong { color: var(--orange); }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--ink); }
+
+  /* Wire legend */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 1.5rem;
+    border-top: 1.5px solid var(--rule);
+    padding-top: 1rem;
+  }
+  .leg-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.76rem; font-family: 'JetBrains Mono', monospace; }
+  .leg-line { width: 28px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+
+  /* Footer */
+  .footer {
+    text-align: center; color: var(--dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.12em;
+    border-top: 1px solid var(--rule); padding-top: 1.2rem; margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="header-left">
+      <h1>Circuit Diagram</h1>
+      <p>IoT Smart Door Lock System · Arduino Uno</p>
+    </div>
+    <div class="header-right">
+      Rev 1.0<br>
+      ECE Internship Project<br>
+      Tinkercad Compatible
+    </div>
+  </div>
+
+  <!-- MAIN DIAGRAM -->
+  <div class="diagram-area">
+    <svg viewBox="0 0 900 500" width="100%" xmlns="http://www.w3.org/2000/svg" style="font-size:11px;">
+      <defs>
+        <marker id="a"  markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#3a3a36"/></marker>
+        <marker id="ap" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#c0392b"/></marker>
+        <marker id="ab" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#2471a3"/></marker>
+        <marker id="ao" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#d35400"/></marker>
+      </defs>
+
+      <!-- ── ARDUINO UNO ── -->
+      <rect x="20" y="60" width="200" height="370" rx="8" fill="#e8f4f0" stroke="#1a7a4a" stroke-width="2"/>
+      <rect x="20" y="60" width="200" height="36" rx="8" fill="#1a7a4a"/>
+      <rect x="20" y="84" width="200" height="12" fill="#1a7a4a"/>
+      <text x="120" y="83" text-anchor="middle" fill="white" font-weight="700" font-size="12">ARDUINO UNO</text>
+      <text x="120" y="108" text-anchor="middle" fill="#1a1a18" font-size="9">ATmega328P</text>
+
+      <!-- Left side pins -->
+      <text x="30" y="135" fill="#3a3a36" font-size="9.5">GND ●</text>
+      <text x="30" y="158" fill="#3a3a36" font-size="9.5">5V  ●</text>
+      <text x="30" y="195" fill="#2471a3" font-size="9.5" font-weight="700">D2  ●</text>
+      <text x="30" y="215" fill="#2471a3" font-size="9.5" font-weight="700">D3  ●</text>
+      <text x="30" y="235" fill="#2471a3" font-size="9.5" font-weight="700">D4  ●</text>
+      <text x="30" y="255" fill="#2471a3" font-size="9.5" font-weight="700">D5  ●</text>
+      <text x="30" y="280" fill="#2471a3" font-size="9.5" font-weight="700">D6  ●</text>
+      <text x="30" y="300" fill="#2471a3" font-size="9.5" font-weight="700">D7  ●</text>
+      <text x="30" y="320" fill="#2471a3" font-size="9.5" font-weight="700">D8  ●</text>
+      <text x="30" y="340" fill="#2471a3" font-size="9.5" font-weight="700">D9  ●</text>
+
+      <!-- Right side pins -->
+      <text x="155" y="195" fill="#2471a3" font-size="9.5" font-weight="700">● D10</text>
+      <text x="155" y="215" fill="#2471a3" font-size="9.5" font-weight="700">● D11</text>
+      <text x="155" y="250" fill="#d35400" font-size="9.5" font-weight="700">● D12</text>
+      <text x="155" y="270" fill="#d35400" font-size="9.5" font-weight="700">● D13</text>
+
+      <!-- Dividers inside Uno -->
+      <line x1="25" y1="170" x2="215" y2="170" stroke="#c8e0d4" stroke-width="0.8"/>
+      <line x1="25" y1="265" x2="215" y2="265" stroke="#c8e0d4" stroke-width="0.8"/>
+      <text x="120" y="185" text-anchor="middle" fill="#888" font-size="8">DIGITAL PINS</text>
+      <text x="120" y="380" text-anchor="middle" fill="#888" font-size="8">SoftwareSerial Bridge</text>
+      <line x1="25" y1="365" x2="215" y2="365" stroke="#c8e0d4" stroke-width="0.8"/>
+
+      <!-- ── KEYPAD ── -->
+      <rect x="310" y="50" width="155" height="200" rx="6" fill="#f0f4ff" stroke="#2471a3" stroke-width="1.8"/>
+      <rect x="310" y="50" width="155" height="28" rx="6" fill="#2471a3"/>
+      <rect x="310" y="66" width="155" height="12" fill="#2471a3"/>
+      <text x="387" y="69" text-anchor="middle" fill="white" font-weight="700" font-size="11">4×4 KEYPAD</text>
+      <!-- Keys grid -->
+      <g fill="#2471a3" opacity="0.15">
+        <rect x="323" y="90" width="28" height="22" rx="3"/><rect x="358" y="90" width="28" height="22" rx="3"/>
+        <rect x="393" y="90" width="28" height="22" rx="3"/><rect x="428" y="90" width="28" height="22" rx="3"/>
+        <rect x="323" y="118" width="28" height="22" rx="3"/><rect x="358" y="118" width="28" height="22" rx="3"/>
+        <rect x="393" y="118" width="28" height="22" rx="3"/><rect x="428" y="118" width="28" height="22" rx="3"/>
+        <rect x="323" y="146" width="28" height="22" rx="3"/><rect x="358" y="146" width="28" height="22" rx="3"/>
+        <rect x="393" y="146" width="28" height="22" rx="3"/><rect x="428" y="146" width="28" height="22" rx="3"/>
+        <rect x="323" y="174" width="28" height="22" rx="3"/><rect x="358" y="174" width="28" height="22" rx="3"/>
+        <rect x="393" y="174" width="28" height="22" rx="3"/><rect x="428" y="174" width="28" height="22" rx="3"/>
+      </g>
+      <g fill="#2471a3" font-size="9">
+        <text x="337" y="105" text-anchor="middle">1</text><text x="372" y="105" text-anchor="middle">2</text>
+        <text x="407" y="105" text-anchor="middle">3</text><text x="442" y="105" text-anchor="middle">A</text>
+        <text x="337" y="133" text-anchor="middle">4</text><text x="372" y="133" text-anchor="middle">5</text>
+        <text x="407" y="133" text-anchor="middle">6</text><text x="442" y="133" text-anchor="middle">B</text>
+        <text x="337" y="161" text-anchor="middle">7</text><text x="372" y="161" text-anchor="middle">8</text>
+        <text x="407" y="161" text-anchor="middle">9</text><text x="442" y="161" text-anchor="middle">C</text>
+        <text x="337" y="189" text-anchor="middle">*</text><text x="372" y="189" text-anchor="middle">0</text>
+        <text x="407" y="189" text-anchor="middle">#</text><text x="442" y="189" text-anchor="middle">D</text>
+      </g>
+      <!-- Keypad pin labels -->
+      <text x="320" y="232" fill="#2471a3" font-size="9">R1 R2 R3 R4</text>
+      <text x="320" y="247" fill="#888" font-size="8">(rows → D9,8,7,6)</text>
+      <text x="320" y="262" fill="#2471a3" font-size="9">C1 C2 C3 C4</text>
+      <text x="320" y="277" fill="#888" font-size="8">(cols → D5,4,3,2)</text>
+
+      <!-- wires keypad → uno -->
+      <line x1="68" y1="191" x2="308" y2="191" stroke="#2471a3" stroke-width="1.5" marker-end="url(#ab)"/>
+      <line x1="68" y1="211" x2="308" y2="211" stroke="#2471a3" stroke-width="1.5" marker-end="url(#ab)"/>
+      <line x1="68" y1="231" x2="308" y2="231" stroke="#2471a3" stroke-width="1.5" marker-end="url(#ab)"/>
+      <line x1="68" y1="251" x2="308" y2="251" stroke="#2471a3" stroke-width="1.5" marker-end="url(#ab)"/>
+      <line x1="68" y1="276" x2="308" y2="276" stroke="#2471a3" stroke-width="1.5" marker-end="url(#ab)"/>
+      <line x1="68" y1="296" x2="308" y2="296" stroke="#2471a3" stroke-width="1.5" marker-end="url(#ab)"/>
+      <line x1="68" y1="316" x2="308" y2="316" stroke="#2471a3" stroke-width="1.5" marker-end="url(#ab)"/>
+      <line x1="68" y1="336" x2="308" y2="336" stroke="#2471a3" stroke-width="1.5" marker-end="url(#ab)"/>
+
+      <!-- ── SERVO ── -->
+      <rect x="550" y="50" width="145" height="110" rx="6" fill="#fff8f0" stroke="#d35400" stroke-width="1.8"/>
+      <rect x="550" y="50" width="145" height="28" rx="6" fill="#d35400"/>
+      <rect x="550" y="66" width="145" height="12" fill="#d35400"/>
+      <text x="622" y="69" text-anchor="middle" fill="white" font-weight="700" font-size="11">SERVO MOTOR</text>
+      <text x="622" y="92" text-anchor="middle" fill="#3a3a36" font-size="9">SG90 / Standard</text>
+      <!-- servo body -->
+      <rect x="572" y="100" width="100" height="42" rx="4" fill="#ddd" stroke="#bbb" stroke-width="1"/>
+      <circle cx="650" cy="121" r="14" fill="#bbb" stroke="#999" stroke-width="1.5"/>
+      <circle cx="650" cy="121" r="4" fill="#888"/>
+      <line x1="650" y1="121" x2="664" y2="112" stroke="#666" stroke-width="2"/>
+      <!-- servo wire labels -->
+      <text x="558" y="160" fill="#c0392b" font-size="9" font-weight="700">● Red   → 5V</text>
+      <text x="558" y="174" fill="#3a3a36" font-size="9">● Brown → GND</text>
+      <text x="558" y="188" fill="#d35400" font-size="9" font-weight="700">● Orange→ D10</text>
+
+      <!-- servo signal wire -->
+      <line x1="220" y1="191" x2="290" y2="191" stroke="#d35400" stroke-width="1.5"/>
+      <line x1="290" y1="191" x2="290" y2="185" stroke="#d35400" stroke-width="1.5"/>
+      <line x1="290" y1="185" x2="548" y2="185" stroke="#d35400" stroke-width="1.8" stroke-dasharray="5,2" marker-end="url(#ao)"/>
+
+      <!-- ── LED + RESISTOR ── -->
+      <rect x="550" y="200" width="145" height="120" rx="6" fill="#fffdf0" stroke="#f4a600" stroke-width="1.8"/>
+      <rect x="550" y="200" width="145" height="28" rx="6" fill="#f4a600"/>
+      <rect x="550" y="216" width="145" height="12" fill="#f4a600"/>
+      <text x="622" y="219" text-anchor="middle" fill="white" font-weight="700" font-size="11">LED INDICATOR</text>
+      <!-- LED symbol -->
+      <polygon points="590,250 610,240 610,260" fill="#f4a600" stroke="#d35400" stroke-width="1.5"/>
+      <line x1="610" y1="240" x2="610" y2="260" stroke="#d35400" stroke-width="2"/>
+      <line x1="613" y1="240" x2="620" y2="232" stroke="#f4a600" stroke-width="1.2"/>
+      <line x1="616" y1="244" x2="623" y2="236" stroke="#f4a600" stroke-width="1.2"/>
+      <line x1="580" y1="250" x2="590" y2="250" stroke="#3a3a36" stroke-width="1.8"/>
+      <line x1="610" y1="250" x2="640" y2="250" stroke="#3a3a36" stroke-width="1.8"/>
+      <!-- Resistor -->
+      <rect x="640" y="244" width="36" height="12" rx="3" fill="#f5f0e0" stroke="#888" stroke-width="1.5"/>
+      <line x1="676" y1="250" x2="688" y2="250" stroke="#3a3a36" stroke-width="1.8"/>
+      <text x="658" y="254" text-anchor="middle" fill="#666" font-size="8">220Ω</text>
+      <text x="560" y="282" fill="#3a3a36" font-size="9">Anode → via 220Ω → D11</text>
+      <text x="560" y="296" fill="#888" font-size="9">Cathode → GND</text>
+      <!-- LED wire -->
+      <line x1="220" y1="211" x2="300" y2="211" stroke="#f4a600" stroke-width="1.5"/>
+      <line x1="300" y1="211" x2="300" y2="247" stroke="#f4a600" stroke-width="1.5"/>
+      <line x1="300" y1="247" x2="548" y2="247" stroke="#f4a600" stroke-width="1.8" marker-end="url(#a)"/>
+
+      <!-- ── ESP8266 ── -->
+      <rect x="550" y="350" width="310" height="130" rx="6" fill="#f8f0ff" stroke="#7b2d8b" stroke-width="1.8"/>
+      <rect x="550" y="350" width="310" height="28" rx="6" fill="#7b2d8b"/>
+      <rect x="550" y="366" width="310" height="12" fill="#7b2d8b"/>
+      <text x="705" y="369" text-anchor="middle" fill="white" font-weight="700" font-size="11">ESP8266 NodeMCU  (WiFi Bridge)</text>
+      <text x="560" y="398" fill="#3a3a36" font-size="9.5">D7 (RX) ← Uno D13  [via voltage divider]</text>
+      <text x="560" y="416" fill="#3a3a36" font-size="9.5">D8 (TX) → Uno D12  [direct]</text>
+      <text x="560" y="434" fill="#c0392b" font-size="9.5" font-weight="700">VIN ← 5V    GND ← GND</text>
+      <text x="560" y="455" fill="#888" font-size="8.5">Receives events from Uno → posts to Adafruit IO</text>
+      <text x="560" y="470" fill="#888" font-size="8.5">Optional enhancement — not needed for base system</text>
+
+      <!-- serial wires -->
+      <line x1="220" y1="247" x2="260" y2="247" stroke="#d35400" stroke-width="1.5"/>
+      <line x1="260" y1="247" x2="260" y2="415" stroke="#d35400" stroke-width="1.5"/>
+      <line x1="260" y1="415" x2="548" y2="415" stroke="#d35400" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ao)"/>
+
+      <line x1="220" y1="267" x2="270" y2="267" stroke="#d35400" stroke-width="1.5"/>
+      <line x1="270" y1="267" x2="270" y2="397" stroke="#d35400" stroke-width="1.5"/>
+      <line x1="270" y1="397" x2="548" y2="397" stroke="#d35400" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#ao)"/>
+
+      <!-- Power rails -->
+      <line x1="68" y1="131" x2="280" y2="131" stroke="#c0392b" stroke-width="2.2"/>
+      <line x1="280" y1="131" x2="280" y2="450" stroke="#c0392b" stroke-width="2.2"/>
+      <text x="282" y="128" fill="#c0392b" font-weight="700" font-size="10">5V BUS</text>
+
+      <line x1="68" y1="152" x2="240" y2="152" stroke="#222" stroke-width="2.2"/>
+      <line x1="240" y1="152" x2="240" y2="460" stroke="#222" stroke-width="2.2"/>
+      <text x="242" y="149" fill="#222" font-weight="700" font-size="10">GND BUS</text>
+
+      <!-- D10 label on right -->
+      <text x="226" y="188" fill="#d35400" font-size="8">D10→Servo</text>
+      <text x="226" y="208" fill="#f4a600" font-size="8">D11→LED</text>
+      <text x="226" y="244" fill="#d35400" font-size="8">D12</text>
+      <text x="226" y="264" fill="#d35400" font-size="8">D13</text>
+    </svg>
+  </div>
+
+  <!-- VOLTAGE DIVIDER CALLOUT -->
+  <div class="callout">
+    <strong>⚠️ Important — Voltage Divider on D13 → ESP8266 D7:</strong><br>
+    Arduino Uno outputs 5V logic on TX. ESP8266 RX accepts max 3.3V. Use a resistor divider to protect the ESP:<br><br>
+    <span class="mono">Uno D13 ──[1kΩ]──┬── ESP D7 (RX)</span><br>
+    <span class="mono">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│</span><br>
+    <span class="mono">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2kΩ]</span><br>
+    <span class="mono">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│</span><br>
+    <span class="mono">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GND</span><br><br>
+    ESP8266 TX → Uno D12 is safe as direct connection (3.3V into 5V tolerant pin).
+  </div>
+
+  <!-- PIN TABLES -->
+  <div class="tables">
+    <div class="tbl-card">
+      <div class="tbl-head">Arduino → Keypad</div>
+      <table>
+        <tr><th>Arduino</th><th>Keypad Pin</th><th>Function</th></tr>
+        <tr><td class="pin">D2</td><td>C4</td><td class="sig">Column 4</td></tr>
+        <tr><td class="pin">D3</td><td>C3</td><td class="sig">Column 3</td></tr>
+        <tr><td class="pin">D4</td><td>C2</td><td class="sig">Column 2</td></tr>
+        <tr><td class="pin">D5</td><td>C1</td><td class="sig">Column 1</td></tr>
+        <tr><td class="pin">D6</td><td>R4</td><td class="sig">Row 4</td></tr>
+        <tr><td class="pin">D7</td><td>R3</td><td class="sig">Row 3</td></tr>
+        <tr><td class="pin">D8</td><td>R2</td><td class="sig">Row 2</td></tr>
+        <tr><td class="pin">D9</td><td>R1</td><td class="sig">Row 1</td></tr>
+      </table>
+    </div>
+    <div class="tbl-card">
+      <div class="tbl-head">Arduino → Peripherals</div>
+      <table>
+        <tr><th>Arduino</th><th>Component</th><th>Notes</th></tr>
+        <tr><td class="pin">D10</td><td>Servo Signal</td><td>Orange wire, PWM</td></tr>
+        <tr><td class="pin">D11</td><td>LED Anode</td><td>Via 220Ω resistor</td></tr>
+        <tr><td class="pin ser">D12</td><td>ESP8266 D8</td><td class="ser">Serial RX bridge</td></tr>
+        <tr><td class="pin ser">D13</td><td>ESP8266 D7*</td><td class="ser">Via voltage divider</td></tr>
+        <tr><td class="pwr">5V</td><td>Servo, ESP VIN</td><td class="pwr">Power rail</td></tr>
+        <tr><td class="gnd">GND</td><td>All GND pins</td><td class="gnd">Common ground</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- WIRE LEGEND -->
+  <div class="legend">
+    <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--dim);font-family:'JetBrains Mono',monospace;align-self:center">Wire Key</span>
+    <div class="leg-item"><div class="leg-line" style="background:#c0392b"></div> 5V Power</div>
+    <div class="leg-item"><div class="leg-line" style="background:#222"></div> GND</div>
+    <div class="leg-item"><div class="leg-line" style="background:#2471a3"></div> Data / Signal</div>
+    <div class="leg-item"><div class="leg-line" style="background:#d35400;border-top:3px dashed #d35400;background:transparent"></div> Serial Bridge (TX/RX)</div>
+    <div class="leg-item"><div class="leg-line" style="background:#f4a600"></div> LED Signal</div>
+  </div>
+
+  <div class="footer">
+    Smart Door Lock System · Arduino Uno · Rev 1.0 · ECE Internship Project
+  </div>
+
+</div>
+</body>
+</html>
